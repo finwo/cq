@@ -21,6 +21,7 @@ Extended entity types:
     - creator = admin at start
 
 Mutation structure, JWT-like:
+  'root' subject = '@'
   head: b64url.encode({
           actor    : profileId
           actorKey : credential's pubkey contained in profile
@@ -29,13 +30,14 @@ Mutation structure, JWT-like:
   body: b64url.encode({
           iat    : timestamp of mutation in milliseconds
           parents: [
-            ...parentId
+            hash(parentMutation),
+            ...
           ],
-          set: {
-            key: value
-          },
+          set: [
+            [subject, predicate, object],
+          ]
           del: [
-            otherkey
+            [subject, predicate, object],
           ]
         })
   sign: b64url.encode(algorithm.sign(head + '.' + 'body'))
