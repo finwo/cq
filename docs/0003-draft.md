@@ -71,6 +71,7 @@ off course:
     {
       "alg": "<keypair's algorithm name>",
       "typ": "actor",
+      "key": "<rootkey public data>",
       "iat": <timestamp in milliseconds>
     }
     ```
@@ -92,6 +93,7 @@ off course:
     {
       "alg": "<rootkey's algorithm name>",
       "typ": "pubkey",
+      "key": "<rootkey public data>",
       "iat": <timestamp in milliseconds>
     }
     ```
@@ -119,9 +121,12 @@ like ?limit=0 on the request. In this case, `N` is decided by the relay/server
 administrator.
 
 Fetching "currently active" keys for a actor should be done through a query
-somewhat resembling `GET /pubkey?actor=<uuid>`. This path is not final and will
+somewhat resembling `GET /actors/<uuid>/keys`. This path is not final and will
 most likely be extended or more clearly defined later in this draft or in a
 future draft.
+
+Should you want to fetch a specific key, a request resembling the following
+should be considered: `GET /keys/<pubkey-data>`
 
 Human-readable aliases of the actor are NOT implemented in this part of the
 spec. They may be added in the future, but for now alias registration is the
@@ -139,6 +144,7 @@ referenced root key. Leaf keys must have their permissions declared.
     {
       "alg": "<rootkey's algorithm name>",
       "typ": "pubkey",
+      "key": "<rootkey public data>",
       "iat": <timestamp in milliseconds>
     }
     ```
@@ -153,11 +159,11 @@ referenced root key. Leaf keys must have their permissions declared.
       "permissions": [
         {
           "action"  : "actor:update",
-          "resource": "/actor/<actor-id>"
+          "resource": "/actors/<actor-id>"
         },
         {
           "action"  : "actor:post",
-          "resource": "/actor/<actor-id>"
+          "resource": "/actors/<actor-id>"
         }
       ],
     }
@@ -198,7 +204,7 @@ contents, so something like sha256(message). Posts are therefor non-mutable.
 
 Before you can add the post to a tag or profile, you need to fetch at least 2
 previous posts for that tag or profile with a query somewhat resembling this:
-`GET /actor/<uuid>/posts?limit=2` or `GET /tag/<tagtext>?limit=2`. The
+`GET /actors/<uuid>/posts?limit=2` or `GET /tags/<tagtext>?limit=2`. The
 server/relay should return the most recent entries it knows and has verified by
 default, not the oldest entries.
 
