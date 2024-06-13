@@ -4,6 +4,9 @@ recommended
 Note that the certificates in this document are NOT x509 certificates, but for
 brevity we'll call them certificates in the rest of this document.
 
+While example data here is formatted as json-like, the actual serialization
+format not been decided on yet.
+
   - identity/&lt;hash-algorithm&gt;:&lt;chain-root-sub-hash&gt;
 
     Represents a person, organization, etc
