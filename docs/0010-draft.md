@@ -5,6 +5,7 @@ Note that the certificates in this document are NOT x509 certificates, but for
 brevity we'll call them certificates in the rest of this document.
 
   - identity/&lt;hash-algorithm&gt;:&lt;chain-root-sub-hash&gt;
+
     Represents a person, organization, etc
 
     ```
