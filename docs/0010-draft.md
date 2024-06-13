@@ -4,7 +4,7 @@ recommended
 Note that the certificates in this document are NOT x509 certificates, but for
 brevity we'll call them certificates in the rest of this document.
 
-  - identity/<hash-algorithm>:<chain-root-sub-hash>
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-sub-hash&gt;
     Represents a person, organization, etc
 
     ```
@@ -27,7 +27,7 @@ brevity we'll call them certificates in the rest of this document.
 
     TODO: message receiving pubkey
 
-  - identity/<chain-root-sub-hash>/chain
+  - identity/&lt;chain-root-sub-hash&gt;/chain
 
     Represents the key-chain for the identity. Every node has a responsibility
     to keep the full chain of the identity they're hosting.
