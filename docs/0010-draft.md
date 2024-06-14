@@ -7,7 +7,7 @@ brevity we'll call them certificates in the rest of this document.
 While example data here is formatted as json-like, the actual serialization
 format not been decided on yet.
 
-  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-sub-hash&gt;
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-iat-sub-hash&gt;
 
     Represents a person, organization, etc
 
@@ -30,6 +30,17 @@ format not been decided on yet.
     identity by generating a new root certificate for it.
 
     TODO: message receiving pubkey
+
+    The node may recognize aliases for specific identities, starting with an `~`
+    character, but these are NOT propagated across the network. The relay or
+    node decides how these are assigned to identities.
+
+    For example, on a mobile phone you might assign aliases to make tagging
+    friends in posts easier, on a self-hosted relay you may choose to assign
+    easily-memorable aliases to your friends so they can easily be found in your
+    environment, on a commercial relay the operator may allow users to claim
+    aliases for a fee. It's truly up to the node operator how to assign the
+    aliases.
 
   - identity/&lt;chain-root-sub-hash&gt;/chain
 
