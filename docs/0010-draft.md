@@ -42,7 +42,7 @@ format not been decided on yet.
     aliases for a fee. It's truly up to the node operator how to assign the
     aliases.
 
-  - identity/&lt;chain-root-sub-hash&gt;/chain
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-iat-sub-hash&gt;/chain
 
     Represents the key-chain for the identity. Every node has a responsibility
     to keep the full chain of the identity they're hosting.
@@ -57,12 +57,14 @@ format not been decided on yet.
     certificate valid during being issued.
 
     Example "certificate":
+
     ```
     {
       "iss": "<issuer-algorithm>:<issuer-pubkey>",
       "sub": "<subject-algorithm>:<subject-pubkey>",
       "iat": <issued-at-timestamp-in-seconds>,
       "exp": <optional-expiry-timestamp-in-seconds>,
+      "usg": "<optional-usage-key>|<optional-usage-key>"
     }
     "." <signature-by-issuer>
     ```
@@ -76,6 +78,60 @@ format not been decided on yet.
     identity. It's the user's responsibility to keep an active key for as long
     as there's intent to keep the identity active.
 
-    TODO: different certificate purposes. So, like "devices" which are allowed
-    to post and update the identity, and like "messaging" purposes for handling
-    incoming messages shared between multiple devices, etc.
+    TODO: define identifiers for usages, like "post|profile|messaging|issue" or
+    something
+
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-iat-sub-hash&gt;/outbox
+
+    Note: may be renamed to "messages" instead of "outbox"
+
+    Private messages to other identifies. Other identities are responsible for
+    fetching private messages from identities they follow in order to prevent
+    being sent spam by unknown identities.
+
+    Example private message:
+
+    ```
+    {
+      "iat": <issued-at-timestamp-in-seconds>,
+      "src": "<source-algorithm>:<source-pubkey>",
+      "dst": "<destination-algorithm>:<destination-pubkey>",
+      "kex": "<optional key-exchange parameter>",
+      "dat": "<encrypted message data, including headers>",
+    }
+    "." <signature-by-src>
+    ```
+
+    It is still to be determined if the destination key should be disclosed, as
+    decoding a message and checking if it's formatted correctly isn't too much
+    effort on the receiver side, akin to how bitmessage attempts to decode all
+    known messages and keeps the one intended for it's own identities.
+
+    Removing the dst would prevent anyone from detecting who you're
+    communicating with, but would increase bandwidth usage drastically for
+    private messaging.
+
+    If the "dst" field is indeed removed, the "src" field should be renamed to
+    "iss" to indicate it's the issuer of the private message.
+
+    Nodes may decide for themselves how much history is to be retained
+
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-iat-sub-hash&gt;/inbox
+
+    **NOT** shared over the network (maybe only to other devices signed in to
+    the same identity, but that is not part of this draft), only a suggested
+    internal structure to the node for keeping a copy of messages sent to it.
+
+  - identity/&lt;hash-algorithm&gt;:&lt;chain-root-iat-sub-hash&gt;/posts
+
+    Publically-readable posts
+
+    ```
+    {
+      "iat": <issued-at-timestamp-in-seconds>,
+      "sub": "<hash-algorithm>:<chain-root-iat-sub-hash>",
+      "iss": "<issuer-algorithm>:<issuer-pubkey>",
+      "dat": "<plaintext post data, including headers>",
+    }
+    "." <signature-by-src>
+    ```
