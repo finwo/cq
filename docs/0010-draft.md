@@ -29,10 +29,9 @@ format not been decided on yet.
     certificate chain root. This should prevent hijacking a pre-existing
     identity by generating a new root certificate for it.
 
-    TODO: message receiving pubkey
-
-    The node may recognize aliases for specific identities, starting with an `~`
-    character, but these are NOT propagated across the network. The relay or
+    TODO: decide if this is a good idea, or just to use `@` like people are used
+    to: The node may recognize aliases for specific identities, starting with an
+    `~` character, but these are NOT propagated across the network. The relay or
     node decides how these are assigned to identities.
 
     For example, on a mobile phone you might assign aliases to make tagging
