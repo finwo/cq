@@ -77,6 +77,9 @@ format not been decided on yet.
     identity. It's the user's responsibility to keep an active key for as long
     as there's intent to keep the identity active.
 
+    Omitting the "usg" field allows the key to be used for everything, including
+    new functionality that is not defined during issueing the key.
+
     TODO: define identifiers for usages, like "post|profile|messaging|issue" or
     something
 
