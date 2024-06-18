@@ -1,0 +1,23 @@
+{
+  "name": "poc-webapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "run-s 'build:*'",
+    "build:common": "npx esbuild --bundle --outfile=public/assets/common.js src/common.js",
+    "build:supercop": "npx esbuild --bundle --outfile=public/assets/supercop.js src/supercop.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "express": "^4.19.2",
+    "htmx.org": "^1.9.12",
+    "supercop": "^3.0.2"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}

@@ -1,0 +1,1 @@
+window.supercop = require('supercop');

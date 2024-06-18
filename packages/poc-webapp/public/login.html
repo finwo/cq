@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Login</title>
+  </head>
+  <body>
+
+    <a href="/">Home</a><br/><br/>
+
+    <input id="seed" name="seed" placeholder="Insert seed here"/>
+    <button onclick="handleLogin();">Login</button>
+
+    <script src="/assets/htmx.js"></script>
+    <script src="/assets/common.js"></script>
+    <script src="/assets/supercop.js"></script>
+    <script>
+      async function handleLogin() {
+        const kp = await supercop.createKeyPair(Buffer.from(seed.value, 'hex'));
+        window.sessionStorage.publicKey = kp.publicKey.toString('hex');
+        window.sessionStorage.secretKey = kp.secretKey.toString('hex');
+        document.location.href = "/";
+      }
+      if (window.localStorage.seed) {
+        seed.value = window.localStorage.seed;
+      }
+    </script>
+  </body>
+</html>
+

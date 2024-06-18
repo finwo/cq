@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Register</title>
+  </head>
+  <body>
+
+    <a href="/">Home</a><br/><br/>
+
+    <div>
+      <label for="seed">Seed</label>
+      <input id="seed" type="text">
+    </div>
+
+    <div>
+      <label for="secret">Secret</label>
+      <input id="secret" type="text">
+    </div>
+
+    <div>
+      <label for="public">Public</label>
+      <input id="public" type="text">
+    </div>
+
+    <br/><br/>
+    <button onclick="regenerate();">Regenerate</button>
+
+    <script src="/assets/htmx.js"></script>
+    <script src="/assets/common.js"></script>
+    <script src="/assets/supercop.js"></script>
+    <script>
+      async function regenerate(sid = null) {
+        seed.value = sid || supercop.createSeed().toString('hex');
+        const kp = await supercop.createKeyPair(Buffer.from(seed.value, 'hex'));
+        window.localStorage.seed = seed.value;
+        window.sessionStorage.publicKey = public.value = kp.publicKey.toString('hex');
+        window.sessionStorage.secretKey = secret.value = kp.secretKey.toString('hex');
+      }
+
+      regenerate(document.location.hash ? document.location.hash.slice(1) : (window.localStorage.seed || null));
+    </script>
+  </body>
+</html>
+
