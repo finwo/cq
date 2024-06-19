@@ -4,6 +4,15 @@
     <meta charset="utf-8"/>
     <title>Sparkly</title>
     <style>
+      * {
+        font-family: inherit;
+      }
+      button, input {
+        font-size: inherit;
+      }
+      body {
+        font-family: sans-serif;
+      }
       #error {
         color: #F22;
       }
@@ -15,6 +24,7 @@
     <script type="text/plain" id="identityViewTemplate">
       <button onclick='handleLogout();'>Logout</button>
       <button onclick='handleEditIdentityView();'>Edit profile</button>
+      <button onclick='handleViewSubscriptions();'>Subscriptions</button>
       <h3>Hello ${identity.name || '&lt;null&gt;'}</h3>
     </script>
 
@@ -28,6 +38,13 @@
       <button onclick="saveEditIdentity();">Save</button>
     </script>
 
+    <script type="text/plain" id="viewSubscriptionsTemplate">
+      <button onclick='handleExitSubscriptionsView();'>Profile</button>
+      <ul>
+
+      </ul>
+    </script>
+
     <script src="/assets/htmx.js"></script>
     <script src="/assets/common.js"></script>
     <script>
@@ -38,7 +55,10 @@
         identity: {
           view: new Function('identity', 'return `' + identityViewTemplate.innerHTML + '`'),
           edit: new Function('identity', 'return `' + identityEditTemplate.innerHTML + '`'),
-        }
+        },
+        subscriptions: {
+          view: new Function('return `' + viewSubscriptionsTemplate.innerHTML + '`'),
+        },
       };
 
       function handleLogout() {
@@ -52,6 +72,13 @@
       }
 
       function cancelEditIdentity() {
+        document.body.innerHTML = template.identity.view(identity);
+      }
+
+      function handleViewSubscriptions() {
+        document.body.innerHTML = template.subscriptions.view();
+      }
+      function handleExitSubscriptionsView() {
         document.body.innerHTML = template.identity.view(identity);
       }
 
