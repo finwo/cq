@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8"/>
-    <title>...</title>
+    <title>Sparkly</title>
   </head>
   <body>
 
@@ -16,5 +16,12 @@
 
     <script src="/assets/htmx.js"></script>
     <script src="/assets/common.js"></script>
+    <script>
+      (async () => {
+        if (window.sessionStorage.publicKey && window.sessionStorage.secretKey) {
+          document.location.href = "/dashboard.html";
+        }
+      })();
+    </script>
   </body>
 </html>

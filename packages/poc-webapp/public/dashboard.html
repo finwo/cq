@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Sparkly</title>
+    <style>
+      #error {
+        color: #F22;
+      }
+    </style>
+  </head>
+  <body>
+    <span id="error"></span>
+
+    <script type="text/plain" id="identityViewTemplate">
+      <button onclick='handleLogout();'>Logout</button>
+      <button onclick='handleEditIdentityView();'>Edit profile</button>
+      <h3>Hello ${identity.name || '&lt;null&gt;'}</h3>
+    </script>
+
+    <script type="text/plain" id="identityEditTemplate">
+      <button onclick='handleLogout();'>Logout</button>
+      <div>
+        <label for=identityName>Name</label>
+        <input id=identityName type=text value="${identity.name || ''}" />
+      </div>
+      <button onclick="cancelEditIdentity();">Cancel</button>
+      <button onclick="saveEditIdentity();">Save</button>
+    </script>
+
+    <script src="/assets/htmx.js"></script>
+    <script src="/assets/common.js"></script>
+    <script>
+      let   identity;
+      let   rootkey  = null;
+      let   keydata  = null;
+      const template = {
+        identity: {
+          view: new Function('identity', 'return `' + identityViewTemplate.innerHTML + '`'),
+          edit: new Function('identity', 'return `' + identityEditTemplate.innerHTML + '`'),
+        }
+      };
+
+      function handleLogout() {
+        delete window.sessionStorage.publicKey;
+        delete window.sessionStorage.secretKey;
+        document.location.href = "/";
+      }
+
+      function handleEditIdentityView() {
+        document.body.innerHTML = template.identity.edit(identity);
+      }
+
+      function cancelEditIdentity() {
+        document.body.innerHTML = template.identity.view(identity);
+      }
+
+      async function saveEditIdentity() {
+        identity                    = identity || { version: 1 };
+        identity.name               = identityName.value;
+        identity.version            = identity.version + 1;
+        const identityRoot          = `identity/sha2-256:${(await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex')}`;
+        const identitySignatureData = base64url.fromBuffer(Buffer.from(JSON.stringify(identity)));
+        const identitySignature     = base64url.fromBuffer(await kp.sign(identitySignatureData));
+        window.localStorage.setItem(identityRoot, `${identitySignatureData}.${identitySignature}`);
+        document.body.innerHTML = template.identity.view(identity);
+      }
+
+      if (!(window.sessionStorage.publicKey && window.sessionStorage.secretKey)) {
+        document.location.href = "/";
+      }
+      window.kp = supercop.KeyPair.from({
+        publicKey: Buffer.from(window.sessionStorage.publicKey, 'hex'),
+        secretKey: Buffer.from(window.sessionStorage.secretKey, 'hex'),
+      });
+
+      (async () => {
+        keydata = await getdoc(`key/supercop:${window.sessionStorage.publicKey}`);
+        let identityRoot;
+
+        // We're a new root key
+        // Create it and re-load the keydata
+        if (!keydata) {
+          keydata = {
+            iss: 'supercop:' + window.sessionStorage.publicKey, // We are the issuer
+            sub: 'supercop:' + window.sessionStorage.publicKey, // We are the subject
+            iat: Math.floor(Date.now() / 1000),
+            usg: '*',
+          };
+
+          // Store new key
+          const keySignatureData = base64url.fromBuffer(Buffer.from(JSON.stringify(keydata)));
+          const keySignature = base64url.fromBuffer(await kp.sign(keySignatureData));
+          window.localStorage.setItem(`key/${keydata.sub}`, `${keySignatureData}.${keySignature}`);
+          keydata = await getdoc(`key/supercop:${window.sessionStorage.publicKey}`);
+          rootkey = keydata;
+
+          // And store fresh identity chain
+          window.localStorage.setItem('identity/sha2-256:' + (await sha2_256(`${keydata.iat}|${keydata.sub}`)).toString('hex') + '/chain', `${keySignatureData}.${keySignature}`);
+        }
+
+        // Fetch the root key
+        // Needed to get identity hash
+        if (!rootkey) {
+          rootkey = keydata;
+          while(rootkey.iss != rootkey.sub) {
+            rootkey = await getdoc(`key/${rootkey.iss}`);
+            if (!rootkey) break;
+          }
+        }
+
+        // No root key = error
+        if (!rootkey) {
+          error.innerText = 'No valid root key';
+          return;
+        }
+
+        // Build identity hash
+        identityRoot = `identity/sha2-256:${(await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex')}`;
+        identity = await getdoc(identityRoot);
+        if (!identity) {
+          identity = {
+            version: 1
+          };
+          const identitySignatureData = base64url.fromBuffer(Buffer.from(JSON.stringify(identity)));
+          const identitySignature     = base64url.fromBuffer(await kp.sign(identitySignatureData));
+          window.localStorage.setItem(identityRoot, `${identitySignatureData}.${identitySignature}`);
+        }
+
+        // And render this page
+        document.body.innerHTML = template.identity.view(identity);
+        setTimeout(() => htmx.process(), 10);
+      })();
+    </script>
+
+  </body>
+</html>

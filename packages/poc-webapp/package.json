@@ -5,8 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "run-s 'build:*'",
-    "build:common": "npx esbuild --bundle --outfile=public/assets/common.js src/common.js",
-    "build:supercop": "npx esbuild --bundle --outfile=public/assets/supercop.js src/supercop.js"
+    "build:common": "npx esbuild --bundle --outfile=public/assets/common.js src/common.js"
   },
   "author": "",
   "license": "ISC",

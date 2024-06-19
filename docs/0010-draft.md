@@ -61,6 +61,7 @@ format not been decided on yet.
     {
       "iss": "<issuer-algorithm>:<issuer-pubkey>",
       "sub": "<subject-algorithm>:<subject-pubkey>",
+      "xcr": "<root-algorithm>:<root-pubkey>",
       "iat": <issued-at-timestamp-in-seconds>,
       "exp": <optional-expiry-timestamp-in-seconds>,
       "usg": "<optional-usage-key>|<optional-usage-key>"
