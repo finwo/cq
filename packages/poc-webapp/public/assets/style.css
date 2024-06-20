@@ -1,0 +1,10 @@
+* {
+  font-family: inherit;
+  box-sizing: border-box;
+}
+button, input {
+  font-size: inherit;
+}
+body {
+  font-family: sans-serif;
+}

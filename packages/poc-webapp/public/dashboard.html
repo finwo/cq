@@ -3,18 +3,42 @@
   <head>
     <meta charset="utf-8"/>
     <title>Sparkly</title>
+    <link rel="stylesheet" href="/assets/style.css"/>
     <style>
-      * {
-        font-family: inherit;
-      }
-      button, input {
-        font-size: inherit;
-      }
-      body {
-        font-family: sans-serif;
-      }
       #error {
         color: #F22;
+      }
+      #messageWrapper {
+        border: 1px solid #0006;
+      }
+      #messageWrapper > aside {
+        float: left;
+        width: 300px;
+        background: #F004;
+      }
+      #messageWrapper > main {
+        float: left;
+        width: calc(100% - 300px);
+        background: #00F4;
+        border-left: 1px solid #0006;
+      }
+      .messageHeader {
+        margin: 0;
+        padding: 0.5rem;
+        border-bottom: 1px solid #0006;
+      }
+      .clear, .clear::before, .clear::after {
+        clear: both;
+      }
+      .convoSelect {
+        padding: 0.5rem;
+      }
+      .convoSelect:hover {
+        background: #0002;
+        cursor: pointer;
+      }
+      .convoSelect + .convoSelect {
+        border-top: 1px solid #0006;
       }
     </style>
   </head>
@@ -25,11 +49,14 @@
       <button onclick='handleLogout();'>Logout</button>
       <button onclick='handleEditIdentityView();'>Edit profile</button>
       <button onclick='handleViewSubscriptions();'>Subscriptions</button>
+      <button onclick='handleViewMessages();'>Messages</button>
       <h3>Hello ${identity.name || '&lt;null&gt;'}</h3>
+      <small>${identityHash}</small>
     </script>
 
     <script type="text/plain" id="identityEditTemplate">
       <button onclick='handleLogout();'>Logout</button>
+      <h3>Edit profile</h3>
       <div>
         <label for=identityName>Name</label>
         <input id=identityName type=text value="${identity.name || ''}" />
@@ -40,9 +67,47 @@
 
     <script type="text/plain" id="viewSubscriptionsTemplate">
       <button onclick='handleExitSubscriptionsView();'>Profile</button>
+      <button onclick='handleAddSubscriptionView();'>Add</button>
+      <h3>Subscriptions</h3>
       <ul>
-
+        ${subscriptions.map(subscriptionHash => {
+          const sub = getdoc(`identity/${subscriptionHash}`);
+          return `
+            <li>${sub.name || subscriptionHash} <button onclick="deleteSubscription('${subscriptionHash}');">Delete</button></li>
+          `
+        })}
       </ul>
+    </script>
+
+    <script type="text/plain" id="formSubscriptionsTemplate">
+      <button onclick='handleExitSubscriptionsForm();'>Cancel</button>
+      <button onclick='handleAddSubscription();'>Add</button>
+      <h3>Add Subscription</h3>
+      <div>
+        <label for=addSubscriptionHash>Identity hash</label>
+        <input id=addSubscriptionHash type=text />
+      </div>
+    </script>
+
+    <script type="text/plain" id="viewMessagesTemplate">
+      <button onclick='handleExitMessagesView();'>Profile</button>
+      <h3>Messages</h3>
+      <div id="messageWrapper">
+        <aside>
+          <h4 class="messageHeader">Contacts</h4>
+          ${subscriptions.map(subscriptionHash => {
+            const sub = getdoc(`identity/${subscriptionHash}`);
+            return `
+              <div class="convoSelect" onclick="selectConversation('${subscriptionHash}')">${sub.name || subscriptionHash}</div>
+            `
+          })}
+        </aside>
+        <main>
+          <h4 class="messageHeader">Conversation</h4>
+          World
+        </main>
+        <div class="clear"></div>
+      </div>
     </script>
 
     <script src="/assets/htmx.js"></script>
@@ -51,13 +116,26 @@
       let   identity;
       let   rootkey  = null;
       let   keydata  = null;
+      let   identityHash;
+
+      Object.defineProperty(window, 'subscriptions', {
+        get() {
+          if (!identityHash) return [];
+          return JSON.parse(window.localStorage.getItem(`identity/${identityHash}/subscriptions`) || '[]');
+        },
+      });
+
       const template = {
         identity: {
-          view: new Function('identity', 'return `' + identityViewTemplate.innerHTML + '`'),
-          edit: new Function('identity', 'return `' + identityEditTemplate.innerHTML + '`'),
+          view: new Function('return `' + identityViewTemplate.innerHTML + '`'),
+          edit: new Function('return `' + identityEditTemplate.innerHTML + '`'),
         },
         subscriptions: {
           view: new Function('return `' + viewSubscriptionsTemplate.innerHTML + '`'),
+          form: new Function('return `' + formSubscriptionsTemplate.innerHTML + '`'),
+        },
+        messages: {
+          view: new Function('return `' + viewMessagesTemplate.innerHTML + '`'),
         },
       };
 
@@ -67,30 +145,61 @@
         document.location.href = "/";
       }
 
-      function handleEditIdentityView() {
-        document.body.innerHTML = template.identity.edit(identity);
+      async function handleEditIdentityView() {
+        document.body.innerHTML = await template.identity.edit();
       }
 
-      function cancelEditIdentity() {
-        document.body.innerHTML = template.identity.view(identity);
+      async function cancelEditIdentity() {
+        document.body.innerHTML = await template.identity.view();
       }
 
-      function handleViewSubscriptions() {
-        document.body.innerHTML = template.subscriptions.view();
+      async function handleViewSubscriptions() {
+        document.body.innerHTML = await template.subscriptions.view();
       }
-      function handleExitSubscriptionsView() {
-        document.body.innerHTML = template.identity.view(identity);
+      async function handleAddSubscriptionView() {
+        document.body.innerHTML = await template.subscriptions.form();
+      }
+      async function handleExitSubscriptionsView() {
+        document.body.innerHTML = await template.identity.view();
+      }
+      async function handleExitSubscriptionsForm() {
+        document.body.innerHTML = await template.subscriptions.view();
+      }
+      async function handleAddSubscription() {
+        const subscriptionList = JSON.parse(window.localStorage.getItem(`identity/${identityHash}/subscriptions`) || '[]');
+        subscriptionList.push(addSubscriptionHash.value);
+        window.localStorage.setItem(`identity/${identityHash}/subscriptions`, JSON.stringify(subscriptionList));
+        handleExitSubscriptionsForm();
+      }
+      async function deleteSubscription(subscriptionHash) {
+        const subscriptionList = JSON.parse(window.localStorage.getItem(`identity/${identityHash}/subscriptions`) || '[]');
+        window.localStorage.setItem(`identity/${identityHash}/subscriptions`, JSON.stringify(subscriptionList.filter(hash => {
+          return hash !== subscriptionHash;
+        })));
+        handleExitSubscriptionsForm();
+      }
+
+      async function selectConversation(subscriptionHash) {
+        console.log('SELECT', subscriptionHash);
+      }
+
+      async function handleViewMessages() {
+        document.body.innerHTML = await template.messages.view();
+      }
+      async function handleExitMessagesView() {
+        document.body.innerHTML = await template.identity.view();
       }
 
       async function saveEditIdentity() {
         identity                    = identity || { version: 1 };
         identity.name               = identityName.value;
         identity.version            = identity.version + 1;
-        const identityRoot          = `identity/sha2-256:${(await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex')}`;
+        identityHash                = 'sha2-256:' + (await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex');
+        const identityRoot          = `identity/${identityHash}`;
         const identitySignatureData = base64url.fromBuffer(Buffer.from(JSON.stringify(identity)));
         const identitySignature     = base64url.fromBuffer(await kp.sign(identitySignatureData));
         window.localStorage.setItem(identityRoot, `${identitySignatureData}.${identitySignature}`);
-        document.body.innerHTML = template.identity.view(identity);
+        document.body.innerHTML = await template.identity.view();
       }
 
       if (!(window.sessionStorage.publicKey && window.sessionStorage.secretKey)) {
@@ -123,7 +232,8 @@
           rootkey = keydata;
 
           // And store fresh identity chain
-          window.localStorage.setItem('identity/sha2-256:' + (await sha2_256(`${keydata.iat}|${keydata.sub}`)).toString('hex') + '/chain', `${keySignatureData}.${keySignature}`);
+          identityHash = 'sha2-256:' + (await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex');
+          window.localStorage.setItem('identity/sha2-256:' + (await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex') + '/chain', `${keySignatureData}.${keySignature}`);
         }
 
         // Fetch the root key
@@ -143,7 +253,8 @@
         }
 
         // Build identity hash
-        identityRoot = `identity/sha2-256:${(await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex')}`;
+        identityHash = 'sha2-256:' + (await sha2_256(`${rootkey.iat}|${rootkey.sub}`)).toString('hex');
+        identityRoot = `identity/${identityHash}`;
         identity = await getdoc(identityRoot);
         if (!identity) {
           identity = {
@@ -155,7 +266,7 @@
         }
 
         // And render this page
-        document.body.innerHTML = template.identity.view(identity);
+        document.body.innerHTML = await template.identity.view();
         setTimeout(() => htmx.process(), 10);
       })();
     </script>
