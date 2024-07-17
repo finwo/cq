@@ -1,0 +1,11 @@
+{
+  "appId": "tbd.sparkly",
+  "appName": "sparkly",
+  "webDir": "dist",
+  "plugins": {
+    "CapacitorCookies": {
+      "enabled": true
+    }
+  }
+}
+

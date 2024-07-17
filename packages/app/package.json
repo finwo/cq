@@ -1,0 +1,28 @@
+{
+  "name": "sparkly",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "web": "npx browser-sync dist",
+    "android": "npx cap run android",
+    "ios": "npx cap run ios",
+    "build": "npm run build:code && npx cap sync",
+    "build:code": "node esbuild.mjs",
+    "build:icons": "npx capacitor-assets generate"
+  },
+  "author": "Yersa Nordman <finwo@pm.me>",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0",
+    "aaargh": "^1.0.3",
+    "esbuild": "^0.23.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/ios": "^6.1.0",
+    "@fontsource/nunito": "^5.0.18",
+    "mithril": "^2.2.2"
+  }
+}
