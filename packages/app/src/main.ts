@@ -65,4 +65,4 @@ document.body.appendChild(ficon);
 setTimeout(() => {
     ficon.className = 'fade'
     setTimeout(() => ficon.parentElement.removeChild(ficon), 400);
-}, 0);
+}, 100);
