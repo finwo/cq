@@ -58,16 +58,6 @@ var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 
-// src/migrations/0000-table-profile.ts
-var require_table_profile = __commonJS({
-  "src/migrations/0000-table-profile.ts"(exports, module2) {
-    module2.exports = {
-      name: "0000-table-profile",
-      sql: `CREATE TABLE IF NOT EXISTS profile (name)`
-    };
-  }
-});
-
 // node_modules/mithril/render/vnode.js
 var require_vnode = __commonJS({
   "node_modules/mithril/render/vnode.js"(exports, module2) {
@@ -1866,53 +1856,536 @@ var require_mithril = __commonJS({
   }
 });
 
-// src/screen/main.tsx
-var main_default = {
-  view() {
-    return /* @__PURE__ */ m("div", null, "Hello World, from ", cordova.platformId);
+// node_modules/proxy-target/esm/types.js
+var FUNCTION = "function";
+
+// node_modules/coincident/esm/channel.js
+var CHANNEL = "64e10b34-2bf7-4616-9668-f99de5aa046e";
+var MAIN = "M" + CHANNEL;
+var THREAD = "T" + CHANNEL;
+
+// node_modules/proxy-target/esm/traps.js
+var GET = "get";
+var HAS = "has";
+var SET = "set";
+
+// node_modules/coincident/esm/bridge.js
+var { isArray } = Array;
+var { SharedArrayBuffer, window: window2 } = globalThis;
+var { notify, wait, waitAsync } = Atomics;
+var postPatched = null;
+if (!waitAsync) {
+  waitAsync = (buffer) => ({
+    value: new Promise((onmessage) => {
+      let w = new Worker("data:application/javascript,onmessage%3D(%7Bdata%3Ab%7D)%3D%3E(Atomics.wait(b%2C0)%2CpostMessage(0))");
+      w.onmessage = onmessage;
+      w.postMessage(buffer);
+    })
+  });
+}
+try {
+  new SharedArrayBuffer(4);
+} catch (_) {
+  SharedArrayBuffer = ArrayBuffer;
+  const ids = /* @__PURE__ */ new WeakMap();
+  if (window2) {
+    const resolvers = /* @__PURE__ */ new Map();
+    const { prototype: { postMessage: postMessage2 } } = Worker;
+    const listener = (event) => {
+      const details = event.data?.[CHANNEL];
+      if (!isArray(details)) {
+        event.stopImmediatePropagation();
+        const { id, sb } = details;
+        resolvers.get(id)(sb);
+      }
+    };
+    postPatched = function(data, ...rest) {
+      const details = data?.[CHANNEL];
+      if (isArray(details)) {
+        const [id, sb] = details;
+        ids.set(sb, id);
+        this.addEventListener("message", listener);
+      }
+      return postMessage2.call(this, data, ...rest);
+    };
+    waitAsync = (sb) => ({
+      value: new Promise((resolve) => {
+        resolvers.set(ids.get(sb), resolve);
+      }).then((buff) => {
+        resolvers.delete(ids.get(sb));
+        ids.delete(sb);
+        for (let i = 0; i < buff.length; i++) sb[i] = buff[i];
+        return "ok";
+      })
+    });
+  } else {
+    const as = (id, sb) => ({ [CHANNEL]: { id, sb } });
+    notify = (sb) => {
+      postMessage(as(ids.get(sb), sb));
+    };
+    addEventListener("message", (event) => {
+      const details = event.data?.[CHANNEL];
+      if (isArray(details)) {
+        const [id, sb] = details;
+        ids.set(sb, id);
+      }
+    });
+  }
+}
+
+// node_modules/coincident/esm/index.js
+var { Int32Array, Map: Map2, Uint16Array } = globalThis;
+var { BYTES_PER_ELEMENT: I32_BYTES } = Int32Array;
+var { BYTES_PER_ELEMENT: UI16_BYTES } = Uint16Array;
+var waitInterrupt = (sb, delay, handler) => {
+  while (wait(sb, 0, 0, delay) === "timed-out")
+    handler();
+};
+var buffers = /* @__PURE__ */ new WeakSet();
+var context = /* @__PURE__ */ new WeakMap();
+var syncResult = { value: { then: (fn) => fn() } };
+var uid = 0;
+var coincident = (self, { parse = JSON.parse, stringify = JSON.stringify, transform, interrupt } = JSON) => {
+  if (!context.has(self)) {
+    const sendMessage = postPatched || self.postMessage;
+    const post = (transfer, ...args) => sendMessage.call(self, { [CHANNEL]: args }, { transfer });
+    const handler = typeof interrupt === FUNCTION ? interrupt : interrupt?.handler;
+    const delay = interrupt?.delay || 42;
+    const decoder = new TextDecoder("utf-16");
+    const waitFor = (isAsync, sb) => isAsync ? waitAsync(sb, 0) : (handler ? waitInterrupt(sb, delay, handler) : wait(sb, 0), syncResult);
+    let seppuku = false;
+    context.set(self, new Proxy(new Map2(), {
+      // there is very little point in checking prop in proxy for this very specific case
+      // and I don't want to orchestrate a whole roundtrip neither, as stuff would fail
+      // regardless if from Worker we access non existent Main callback, and vice-versa.
+      // This is here mostly to guarantee that if such check is performed, at least the
+      // get trap goes through and then it's up to developers guarantee they are accessing
+      // stuff that actually exists elsewhere.
+      [HAS]: (_, action) => typeof action === "string" && !action.startsWith("_"),
+      // worker related: get any utility that should be available on the main thread
+      [GET]: (_, action) => action === "then" ? null : (...args) => {
+        const id = uid++;
+        let sb = new Int32Array(new SharedArrayBuffer(I32_BYTES * 2));
+        let transfer = [];
+        if (buffers.has(args.at(-1) || transfer))
+          buffers.delete(transfer = args.pop());
+        post(transfer, id, sb, action, transform ? args.map(transform) : args);
+        const isAsync = self !== globalThis;
+        let deadlock = 0;
+        if (seppuku && isAsync)
+          deadlock = setTimeout(console.warn, 1e3, `\u{1F480}\u{1F512} - Possible deadlock if proxy.${action}(...args) is awaited`);
+        return waitFor(isAsync, sb).value.then(() => {
+          clearTimeout(deadlock);
+          const length = sb[1];
+          if (!length) return;
+          const bytes = UI16_BYTES * length;
+          sb = new Int32Array(new SharedArrayBuffer(bytes + bytes % I32_BYTES));
+          post([], id, sb);
+          return waitFor(isAsync, sb).value.then(
+            () => parse(
+              decoder.decode(new Uint16Array(sb.buffer).slice(0, length))
+            )
+          );
+        });
+      },
+      // main thread related: react to any utility a worker is asking for
+      [SET](actions, action, callback) {
+        const type = typeof callback;
+        if (type !== FUNCTION)
+          throw new Error(`Unable to assign ${action} as ${type}`);
+        if (!actions.size) {
+          const results = new Map2();
+          self.addEventListener("message", async (event) => {
+            const details = event.data?.[CHANNEL];
+            if (isArray(details)) {
+              event.stopImmediatePropagation();
+              const [id, sb, ...rest] = details;
+              let error;
+              if (rest.length) {
+                const [action2, args] = rest;
+                if (actions.has(action2)) {
+                  seppuku = true;
+                  try {
+                    const result = await actions.get(action2)(...args);
+                    if (result !== void 0) {
+                      const serialized = stringify(transform ? transform(result) : result);
+                      results.set(id, serialized);
+                      sb[1] = serialized.length;
+                    }
+                  } catch (_) {
+                    error = _;
+                  } finally {
+                    seppuku = false;
+                  }
+                } else {
+                  error = new Error(`Unsupported action: ${action2}`);
+                }
+                sb[0] = 1;
+              } else {
+                const result = results.get(id);
+                results.delete(id);
+                for (let ui16a = new Uint16Array(sb.buffer), i = 0; i < result.length; i++)
+                  ui16a[i] = result.charCodeAt(i);
+              }
+              notify(sb, 0);
+              if (error) throw error;
+            }
+          });
+        }
+        return !!actions.set(action, callback);
+      }
+    }));
+  }
+  return context.get(self);
+};
+coincident.transfer = (...args) => (buffers.add(args), args);
+var esm_default = coincident;
+
+// node_modules/nanoid/url-alphabet/index.js
+var urlAlphabet = "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict";
+
+// node_modules/nanoid/index.browser.js
+var nanoid = (size = 21) => {
+  let id = "";
+  let bytes = crypto.getRandomValues(new Uint8Array(size));
+  while (size--) {
+    id += urlAlphabet[bytes[size] & 63];
+  }
+  return id;
+};
+
+// node_modules/sqlocal/dist/lib/sql-tag.js
+function sqlTag(queryTemplate, ...params) {
+  return {
+    sql: queryTemplate.join("?"),
+    params
+  };
+}
+
+// node_modules/sqlocal/dist/lib/convert-rows-to-objects.js
+function isArrayOfArrays(rows) {
+  return !rows.some((row) => !Array.isArray(row));
+}
+function convertRowsToObjects(rows, columns) {
+  let checkedRows;
+  if (isArrayOfArrays(rows)) {
+    checkedRows = rows;
+  } else {
+    checkedRows = [rows];
+  }
+  return checkedRows.map((row) => {
+    const rowObj = {};
+    columns.forEach((column, columnIndex) => {
+      rowObj[column] = row[columnIndex];
+    });
+    return rowObj;
+  });
+}
+
+// node_modules/sqlocal/dist/client.js
+var import_meta = {};
+var SQLocal = class {
+  constructor(config) {
+    Object.defineProperty(this, "databasePath", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "worker", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "proxy", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "isWorkerDestroyed", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: false
+    });
+    Object.defineProperty(this, "userCallbacks", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: /* @__PURE__ */ new Map()
+    });
+    Object.defineProperty(this, "queriesInProgress", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: /* @__PURE__ */ new Map()
+    });
+    Object.defineProperty(this, "processMessageEvent", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: (event) => {
+        const message = event.data;
+        const queries = this.queriesInProgress;
+        switch (message.type) {
+          case "success":
+          case "data":
+          case "error":
+          case "info":
+            if (message.queryKey && queries.has(message.queryKey)) {
+              const [resolve, reject] = queries.get(message.queryKey);
+              if (message.type === "error") {
+                reject(message.error);
+              } else {
+                resolve(message);
+              }
+              queries.delete(message.queryKey);
+            } else if (message.type === "error") {
+              throw message.error;
+            }
+            break;
+          case "callback":
+            const userCallback = this.userCallbacks.get(message.name);
+            if (userCallback) {
+              userCallback(...message.args ?? []);
+            }
+            break;
+        }
+      }
+    });
+    Object.defineProperty(this, "createQuery", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: (message) => {
+        if (this.isWorkerDestroyed === true) {
+          throw new Error("This SQLocal client has been destroyed. You will need to initialize a new client in order to make further queries.");
+        }
+        const queryKey = nanoid();
+        switch (message.type) {
+          case "import":
+            this.worker.postMessage({
+              ...message,
+              queryKey
+            }, [message.database]);
+            break;
+          default:
+            this.worker.postMessage({
+              ...message,
+              queryKey
+            });
+            break;
+        }
+        return new Promise((resolve, reject) => {
+          this.queriesInProgress.set(queryKey, [resolve, reject]);
+        });
+      }
+    });
+    Object.defineProperty(this, "exec", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (sql, params, method = "all") => {
+        const message = await this.createQuery({
+          type: "query",
+          sql,
+          params,
+          method
+        });
+        const data = {
+          rows: [],
+          columns: []
+        };
+        if (message.type === "data") {
+          data.rows = message.data[0].rows;
+          data.columns = message.data[0].columns;
+        }
+        return data;
+      }
+    });
+    Object.defineProperty(this, "execBatch", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (statements) => {
+        const message = await this.createQuery({
+          type: "batch",
+          statements
+        });
+        const data = new Array(statements.length).fill({
+          rows: [],
+          columns: []
+        });
+        if (message.type === "data") {
+          message.data.forEach((result, resultIndex) => {
+            data[resultIndex] = result;
+          });
+        }
+        return data;
+      }
+    });
+    Object.defineProperty(this, "sql", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (queryTemplate, ...params) => {
+        let statement;
+        if (typeof queryTemplate === "string") {
+          statement = { sql: queryTemplate, params };
+        } else {
+          statement = sqlTag(queryTemplate, ...params);
+        }
+        const { rows, columns } = await this.exec(statement.sql, statement.params, "all");
+        const resultRecords = convertRowsToObjects(rows, columns);
+        return resultRecords;
+      }
+    });
+    Object.defineProperty(this, "transaction", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (passStatements) => {
+        const statements = passStatements(sqlTag);
+        const data = await this.execBatch(statements);
+        return data.map(({ rows, columns }) => {
+          const resultRecords = convertRowsToObjects(rows, columns);
+          return resultRecords;
+        });
+      }
+    });
+    Object.defineProperty(this, "batch", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (passStatements) => {
+        return await this.transaction(passStatements);
+      }
+    });
+    Object.defineProperty(this, "createCallbackFunction", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (funcName, func) => {
+        await this.createQuery({
+          type: "function",
+          functionName: funcName,
+          functionType: "callback"
+        });
+        this.userCallbacks.set(funcName, func);
+      }
+    });
+    Object.defineProperty(this, "createScalarFunction", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (funcName, func) => {
+        await this.createQuery({
+          type: "function",
+          functionName: funcName,
+          functionType: "scalar"
+        });
+        this.proxy[`_sqlocal_func_${funcName}`] = func;
+      }
+    });
+    Object.defineProperty(this, "getDatabaseInfo", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async () => {
+        const message = await this.createQuery({ type: "getinfo" });
+        if (message.type === "info") {
+          return message.info;
+        } else {
+          throw new Error("The database failed to return valid information.");
+        }
+      }
+    });
+    Object.defineProperty(this, "getDatabaseFile", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async () => {
+        const path = this.databasePath.split(/[\\/]/).filter((part) => part !== "");
+        const fileName = path.pop();
+        if (!fileName) {
+          throw new Error("Failed to parse the database file name.");
+        }
+        let dirHandle = await navigator.storage.getDirectory();
+        for (let dirName of path)
+          dirHandle = await dirHandle.getDirectoryHandle(dirName);
+        const fileHandle = await dirHandle.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        return new File([file], fileName, {
+          type: "application/x-sqlite3"
+        });
+      }
+    });
+    Object.defineProperty(this, "overwriteDatabaseFile", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async (databaseFile) => {
+        let database;
+        if (databaseFile instanceof Blob) {
+          database = await databaseFile.arrayBuffer();
+        } else {
+          database = databaseFile;
+        }
+        await this.createQuery({
+          type: "import",
+          database
+        });
+      }
+    });
+    Object.defineProperty(this, "destroy", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: async () => {
+        await this.createQuery({ type: "destroy" });
+        this.worker.removeEventListener("message", this.processMessageEvent);
+        this.queriesInProgress.clear();
+        this.userCallbacks.clear();
+        this.worker.terminate();
+        this.isWorkerDestroyed = true;
+      }
+    });
+    config = typeof config === "string" ? { databasePath: config } : config;
+    this.worker = new Worker(new URL("./worker", import_meta.url), {
+      type: "module"
+    });
+    this.worker.addEventListener("message", this.processMessageEvent);
+    this.proxy = esm_default(this.worker);
+    this.databasePath = config.databasePath;
+    this.worker.postMessage({
+      type: "config",
+      config
+    });
   }
 };
 
-// src/migrations/index.ts
-var migrations_default = [
-  require_table_profile()
-];
+// src/sqlite-opfs.ts
+async function openDatabase(dbname) {
+  console.log(SQLocal);
+}
 
 // src/main.ts
 new Function("return this;")().m = require_mithril();
-var navi = {
-  "/main": main_default
-};
 document.addEventListener("deviceready", async function() {
-  const db = window.sqlitePlugin.openDatabase({
+  const db = window.cordova.platformId == "browser" ? openDatabase("testdb") : window.sqlitePlugin.openDatabase({
     name: "testdb",
     location: "default",
     androidDatabaseProvider: "system"
   });
-  await new Promise((r, e) => db.executeSql("CREATE TABLE IF NOT EXISTS _migrations (name, iat)", e, r));
-  const doneMigrations = await new Promise((r) => db.executeSql("SELECT name, iat FROM _migrations", [], r));
-  console.log(doneMigrations.rows.length, doneMigrations);
-  for (const migration of migrations_default) {
-    await new Promise((r, e) => {
-      db.transaction(function(tx) {
-        tx.executeSql(migration.sql);
-        tx.executeSql(`INSERT INTO _migrations VALUES (?, ?)`, [migration.name, Date.now()]);
-      }, function(err) {
-        e(err);
-      }, function() {
-        r();
-      });
-    });
-  }
-  const afterMigrations = await new Promise((r) => db.executeSql("SELECT name, iat FROM _migrations", [], r));
-  console.log(afterMigrations.rows.length, afterMigrations);
-  console.log("migrations table exists now");
-  const ficon = document.getElementById("floaticon");
-  m.route(document.body, "/main", navi);
-  document.body.appendChild(ficon);
-  setTimeout(() => ficon.className = "fade", 0);
   console.log(db);
 });
+/*! Bundled license information:
+
+coincident/esm/index.js:
+  (*! (c) Andrea Giammarchi - ISC *)
+*/
 </script>
     <script src="cordova.js"></script>
   </body>

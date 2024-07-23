@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "ios": "npx cordova run ios",
+    "ios": "npx cordova build ios && npx cordova run ios",
     "browser": "npx cordova run browser",
     "build": "npm run build:code",
     "build:code": "node esbuild.mjs"
@@ -32,8 +32,10 @@
   },
   "dependencies": {
     "@fontsource/nunito": "^5.0.18",
+    "@sqlite.org/sqlite-wasm": "^3.46.0-build2",
     "cordova": "^12.0.0",
     "cordova-sqlite-storage": "^6.1.0",
-    "mithril": "^2.2.2"
+    "mithril": "^2.2.2",
+    "sqlocal": "^0.10.2"
   }
 }

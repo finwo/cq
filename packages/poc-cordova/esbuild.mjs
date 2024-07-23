@@ -135,4 +135,9 @@ esbuild
 </html>
 `);
 
+    // Remove unneeded files after bundling
+    for(const fname of [...buildList, ...styles]) {
+      fs.unlinkSync(`${config.outdir}/${fname}`);
+    }
+
   })
