@@ -1,7 +1,7 @@
 export default {
   view() {
     return <div>
-        Hello world!
+        Hello world, from {Capacitor.getPlatform()}!
       </div>
       ;
   }

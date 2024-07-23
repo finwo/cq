@@ -16,13 +16,18 @@
   "devDependencies": {
     "@capacitor/cli": "^6.1.0",
     "aaargh": "^1.0.3",
+    "cpy": "^11.0.1",
     "esbuild": "^0.23.0"
   },
   "dependencies": {
+    "@capacitor-community/sqlite": "^6.0.1",
     "@capacitor/android": "^6.1.0",
     "@capacitor/core": "^6.1.0",
     "@capacitor/ios": "^6.1.0",
     "@fontsource/nunito": "^5.0.18",
-    "mithril": "^2.2.2"
+    "browserify-fs": "^1.0.0",
+    "jeep-sqlite": "^2.7.2",
+    "mithril": "^2.2.2",
+    "sql.js": "^1.10.3"
   }
 }
