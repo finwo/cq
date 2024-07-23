@@ -1,0 +1,21 @@
+:root {
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/*main {*/
+/*  position: absolute;*/
+/*  min-height: 100vh;*/
+/*  min-width: 100vw;*/
+/*  background-color: #f47230;*/
+/*  color: #fff;*/
+/*}*/

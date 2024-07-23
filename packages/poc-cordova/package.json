@@ -1,0 +1,39 @@
+{
+  "name": "nl.finwo.sparkly",
+  "displayName": "HelloCordova",
+  "version": "1.0.0",
+  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ios": "npx cordova run ios",
+    "browser": "npx cordova run browser",
+    "build": "npm run build:code",
+    "build:code": "node esbuild.mjs"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "Apache Cordova Team",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "cordova-browser": "^7.0.0",
+    "cordova-ios": "^7.1.0",
+    "esbuild": "^0.23.0"
+  },
+  "cordova": {
+    "platforms": [
+      "ios",
+      "browser"
+    ],
+    "plugins": {
+      "cordova-sqlite-storage": {}
+    }
+  },
+  "dependencies": {
+    "@fontsource/nunito": "^5.0.18",
+    "cordova": "^12.0.0",
+    "cordova-sqlite-storage": "^6.1.0",
+    "mithril": "^2.2.2"
+  }
+}
