@@ -8,9 +8,11 @@ const navi = {
 
 import { Capacitor } from '@capacitor/core';
 import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
-applyPolyfills().then(() => {
-  jeepSqlite(window);
-});
+if (Capacitor.getPlatform() == 'web') {
+  applyPolyfills().then(() => {
+    jeepSqlite(window);
+  });
+}
 
 import { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
          capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
@@ -19,7 +21,6 @@ const sqlitePlugin = CapacitorSQLite;
 const sqliteConnection = new SQLiteConnection(sqlitePlugin);
 
 // Web polyfill
-const platform = Capacitor.getPlatform();
 if (Capacitor.getPlatform() == 'web') {
   const elJeepSqlite = document.createElement('jeep-sqlite');
   document.body.appendChild(elJeepSqlite);
@@ -44,11 +45,18 @@ const openDatabase = async (
     db = await sqliteConnection
               .createConnection(dbName, encrypted, mode, version, readonly);
   }
-  await db.open();
+
+  try {
+    await db.open();
+  } catch(e) {
+    document.body.innerText = '\n\nError loading database';
+    throw e;
+  }
   return db;
 }
 
-(new Function('return this;'))()._db = await openDatabase('main', true, 'encryption', 1, false);
+// (new Function('return this;'))()._db = await openDatabase('main', true, 'encryption', 1, false);
+(new Function('return this;'))()._db = await openDatabase('main', false, 'no-encryption', 1, false);
 
 // And finally initialize the views of the app
 const ficon = document.getElementById('floaticon');
