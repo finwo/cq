@@ -1,15 +1,27 @@
 :root {
   font-family: 'Nunito', sans-serif;
   line-height: 1.5;
+  --color-forground: #444;
+  --border-color: #0004;
 }
 
 * {
   box-sizing: border-box;
+  color: var(--color-forground);
 }
 
 body {
   margin: 0;
   padding: 0;
+}
+
+textarea, input {
+  font: inherit;
+}
+
+.onclick,
+[onclick]:hover {
+  cursor: pointer;
 }
 
 /*main {*/

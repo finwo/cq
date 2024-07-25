@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+(new Function('return this;'))().Buffer = require('buffer').Buffer;
 
 // Initialize storage
 import { Capacitor } from '@capacitor/core';

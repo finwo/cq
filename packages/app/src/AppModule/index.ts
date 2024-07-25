@@ -4,10 +4,12 @@ import "@fontsource/nunito/400.css";
 import screenMain         from './screen/main';
 import screenAuthLogin    from './screen/auth/login';
 import screenAuthRegister from './screen/auth/register';
+import screenAuthSwitcher from './screen/auth/switcher';
 const navi = {
   "/main"         : screenMain,
   "/auth/login"   : screenAuthLogin,
   "/auth/register": screenAuthRegister,
+  "/auth/switcher": screenAuthSwitcher,
 };
 
 // And finally initialize the views of the app

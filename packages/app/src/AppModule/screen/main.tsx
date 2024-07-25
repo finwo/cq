@@ -6,9 +6,16 @@ export default {
   async oninit() {
     await Container.whenDefined(SessionRepository);
     const repository     = Container.get(SessionRepository);
+
+    const allSessions = await repository.allSessions();
+    if (!allSessions.length) {
+      document.location.href = m.route.prefix + '/auth/login';
+      return;
+    }
+
     const currentSession = await repository.getSession('current');
     if (!currentSession) {
-      document.location.href = m.route.prefix + '/auth/login';
+      document.location.href = m.route.prefix + '/auth/switcher';
       return;
     }
 
