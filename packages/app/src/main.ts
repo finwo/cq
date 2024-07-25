@@ -7,7 +7,6 @@ console.log(Capacitor.getPlatform());
 if (false) {
   // TODO: some check for the desktop webview platform
 } else if (['web','ios','android'].includes(Capacitor.getPlatform())) {
-  console.log('Loading opfs module');
   require('./OpfsModule');
 }
 
