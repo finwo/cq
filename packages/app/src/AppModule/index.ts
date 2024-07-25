@@ -1,9 +1,13 @@
 import "@fontsource/nunito/400.css";
 (new Function('return this;'))().m = require('mithril');
 
-import screenMain from './screen/main';
+import screenMain         from './screen/main';
+import screenAuthLogin    from './screen/auth/login';
+import screenAuthRegister from './screen/auth/register';
 const navi = {
-  "/main": screenMain,
+  "/main"         : screenMain,
+  "/auth/login"   : screenAuthLogin,
+  "/auth/register": screenAuthRegister,
 };
 
 // And finally initialize the views of the app
@@ -15,11 +19,3 @@ setTimeout(() => {
     ficon.className = 'fade'
     setTimeout(() => ficon.parentElement.removeChild(ficon), 400);
 }, 100);
-
-import { Container } from '@finwo/di';
-import { SessionRepository } from '../CoreModule/repository/session';
-
-const repo = Container.get(SessionRepository);
-(async () => {
-  console.log(await repo.allSessions());
-})();

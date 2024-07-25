@@ -1,8 +1,18 @@
 import { Capacitor } from '@capacitor/core';
+import { Container } from '@finwo/di';
+import { SessionRepository } from '../../CoreModule/repository/session';
 
 export default {
-  oninit() {
+  async oninit() {
+    await Container.whenDefined(SessionRepository);
+    const repository     = Container.get(SessionRepository);
+    const currentSession = await repository.getSession('current');
+    if (!currentSession) {
+      document.location.href = m.route.prefix + '/auth/login';
+      return;
+    }
 
+    console.log({ currentSession });
   },
   view() {
     return <div>
