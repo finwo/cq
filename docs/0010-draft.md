@@ -138,3 +138,5 @@ format not been decided on yet.
     }
     "." <signature-by-src>
     ```
+
+  - TODO: how to store identities you follow

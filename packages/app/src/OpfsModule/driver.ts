@@ -11,7 +11,7 @@ type ChainedStorageEntry = {
 };
 
 // Half-promise half-chained interface for OPFS
-function chainedStorage(path?: ChainedStorageEntry[]) {
+export function chainedStorage(path?: ChainedStorageEntry[]) {
   let q = navigator.storage.getDirectory();
   return {
     directory(name: string) {
@@ -71,25 +71,8 @@ function chainedStorage(path?: ChainedStorageEntry[]) {
   };
 }
 
-abstract class GenericRepository {
+abstract class OPFSRepository {
   protected directory: string;
-
-  // private async buildDirectoryHandle(path: string|string[]) {
-  //   if (Array.isArray(path)) {
-  //     path = path.join('/');
-  //   }
-  //   if ('string' === typeof path) {
-  //     path = path.replace(/(^\/+|\/+$)/, '').split('/');
-  //   }
-  //   if (!Array.isArray(path)) {
-  //     return new Error('Invalid path');
-  //   }
-  //   let handle = await navigator.storage.getDirectory();
-  //   while(path.length) {
-  //     handle = await handle.getDirectoryHandle(path.shift(), { create: true });
-  //   }
-  //   return handle;
-  // }
 
   async find() {
     return chainedStorage()
@@ -117,41 +100,4 @@ abstract class GenericRepository {
       .del(identifier);
   }
 
-  // async get(identifier: string, create?: boolean = false) {
-  //   const dirHandle = await this.buildDirectoryHandle(this.directory);
-  //   try {
-  //     const fileHandle = await dirHandle.getFileHandle(identifier, { create });
-  //     return fileHandle;
-  //   } catch {
-  //     return new NotFoundError();
-  //   }
-  // }
-
-  // async delete(identifier: string) {
-  //   const dirHandle = await this.buildDirectoryHandle(this.directory);
-  //   try {
-  //     dirHandle.removeEntry(identifier, { recursive: true });
-  //     return true;
-  //   } catch {
-  //     return false;
-  //   }
-  // }
-
 }
-
-class ProfileRepository extends GenericRepository {
-  constructor() {
-    super();
-    this.directory = 'profiles';
-  }
-}
-
-class SessionRepository extends GenericRepository {
-  constructor() {
-    super();
-    this.directory = 'sessions';
-  }
-}
-
-export const sessionRepository = new SessionRepository();
-export const profileRepository = new ProfileRepository();

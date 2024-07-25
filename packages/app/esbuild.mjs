@@ -39,7 +39,7 @@ const config = {
 };
 
 const buildList = [];
-const styles    = ['global.css'];
+const styles    = ['AppModule/global.css'];
 
 esbuild
   .build(config)
@@ -48,8 +48,8 @@ esbuild
     try { fs.mkdirSync('./dist/assets'); } catch { /* empty */ }
     const r = await cpy(__dirname + '/src/assets/*', __dirname + '/dist/assets');
 
-    fs.copyFileSync(`./src/global.css`, `./dist/global.css`);
-    fs.copyFileSync(`./node_modules/sql.js/dist/sql-wasm.wasm`, `./dist/assets/sql-wasm.wasm`);
+    try { fs.mkdirSync('./dist/AppModule'); } catch { /* empty */ }
+    fs.copyFileSync(`./src/AppModule/global.css`, `./dist/AppModule/global.css`);
 
     for(const name of Object.keys(entryPoints)) {
       buildList.push(`${name}.js`);

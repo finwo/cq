@@ -1,24 +1,18 @@
-(new Function('return this;'))().m = require('mithril');
-import "@fontsource/nunito/400.css";
+import 'reflect-metadata';
 
-import screenMain from './screen/main';
-const navi = {
-  "/main": screenMain,
-};
-
+// Initialize storage
 import { Capacitor } from '@capacitor/core';
-import { sessionRepository, profileRepository } from './storage';
 
+console.log(Capacitor.getPlatform());
+if (false) {
+  // TODO: some check for the desktop webview platform
+} else if (['web','ios','android'].includes(Capacitor.getPlatform())) {
+  console.log('Loading opfs module');
+  require('./OpfsModule');
+}
 
-
-console.log(await sessionRepository.find());
-console.log(await profileRepository.find());
-
-console.log(await sessionRepository.put('default', {
-  foo: 'bar'
-}));
-
-console.log(await sessionRepository.get('default'));
+// Initialize the app itself
+require('./AppModule');
 
 // import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
 // if (Capacitor.getPlatform() == 'web') {
@@ -112,11 +106,3 @@ console.log(await sessionRepository.get('default'));
 //   console.log(migration);
 // }
 
-// And finally initialize the views of the app
-const ficon = document.getElementById('floaticon');
-m.route(document.body, "/main", navi);
-document.body.appendChild(ficon);
-setTimeout(() => {
-    ficon.className = 'fade'
-    setTimeout(() => ficon.parentElement.removeChild(ficon), 400);
-}, 100);
