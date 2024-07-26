@@ -67,7 +67,8 @@ esbuild
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    ${styles.map(name => `<link rel="stylesheet" href="${name}"/>`).join('\n    ')}
+
+    ${styles.map(name => `<link rel="preload" as="style" href="${name}" onload="this.onload=null;this.rel='stylesheet'"/>`).join('\n    ')}
   </head>
   <body>
 
@@ -95,7 +96,7 @@ esbuild
       <img src="assets/logo.png">
     </div>
 
-    ${buildList.map(name => `<script type="module" src="${name}"></script>`).join('\n    ')}
+    ${buildList.map(name => `<script type="module" src="${name}" defer></script>`).join('\n    ')}
   </body>
 </html>
 `);
