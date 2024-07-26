@@ -1,7 +1,7 @@
 :root {
   font-family: 'Nunito', sans-serif;
   line-height: 1.5;
-  --color-forground: #444;
+  --color-forground: #333;
   --border-color: #0004;
 }
 
@@ -21,6 +21,21 @@ textarea, input {
 
 .onclick,
 [onclick]:hover {
+  cursor: pointer;
+}
+
+textarea {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5em;
+  padding: 0.5em 0.75em;
+}
+
+button {
+  background: var(--color-forground);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5em;
+  padding: 0.5em 1em;
   cursor: pointer;
 }
 
