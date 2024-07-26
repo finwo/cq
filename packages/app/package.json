@@ -20,16 +20,13 @@
     "esbuild": "^0.23.0"
   },
   "dependencies": {
-    "@capacitor-community/sqlite": "^6.0.1",
     "@capacitor/android": "^6.1.0",
     "@capacitor/core": "^6.1.0",
     "@capacitor/ios": "^6.1.0",
     "@finwo/di": "^1.2.0",
     "@fontsource/nunito": "^5.0.18",
     "bip39": "^3.1.0",
-    "browserify-fs": "^1.0.0",
     "buffer": "^6.0.3",
-    "jeep-sqlite": "^2.7.2",
     "json-schema-to-ts": "^3.1.0",
     "mithril": "^2.2.2",
     "reflect-metadata": "^0.1.14",
