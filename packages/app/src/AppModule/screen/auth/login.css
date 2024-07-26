@@ -16,29 +16,3 @@
   padding-top: 5em;
   min-height: 100vh;
 }
-#loginPage small {
-  color: #000A;
-}
-
-/*#sessionList {*/
-/*  display: inline-block;*/
-/*  border: 1px solid #0004;*/
-/*  border-radius: 1em;*/
-/*  padding: 0;*/
-/*  list-style: none;*/
-/*  text-align: left;*/
-/*  overflow: hidden;*/
-/*}*/
-/*#sessionList > li {*/
-/*  padding: 1em;*/
-/*}*/
-/*#sessionList > li:first-child {*/
-/*  padding-top: 1.25em;*/
-/*}*/
-/*#sessionList > li:hover {*/
-/*  background: #0001;*/
-/*  cursor: pointer;*/
-/*}*/
-/*#sessionList > li + li {*/
-/*  border-top: 1px solid #0004;*/
-/*}*/

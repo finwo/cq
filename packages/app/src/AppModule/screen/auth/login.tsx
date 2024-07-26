@@ -3,10 +3,6 @@ import './login.css';
 import { Container } from '@finwo/di';
 import { SessionRepository } from '../../../CoreModule/repository/session';
 
-function gotoRegister() {
-  document.location.href = m.route.prefix + '/auth/register';
-}
-
 export default {
   sessions: [],
 
@@ -34,7 +30,7 @@ export default {
         <br/>
         <button type="submit">Login</button>
         <br/><br/>
-        <small onclick={gotoRegister} class="onclick">Create new identity</small>
+        <a href={m.route.prefix + '/auth/register'} class="small">Create new identity</a>
       </form>
     );
   }
