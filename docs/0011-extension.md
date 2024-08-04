@@ -1,6 +1,4 @@
-revision: 3
-
----
+# rev3
 
 ## Groundwork
 
@@ -176,10 +174,7 @@ Certificates have a text-based structure
 
 
 
-revision: 2
-
----
-
+# rev2
 
 ### Known issues
 
@@ -339,9 +334,7 @@ Hello coffee, how are you doing today?
 
 
 
-revision: 1
-
----
+# rev1
 
 For complex content you could even use the `multipart/mixed; boundary=xxx` content type to have multiple formattings
 For example, if we request a whole chain from a remote node over http in json-ld format, a request-response pair may look something like this:
